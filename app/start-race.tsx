@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
 });
 
 export default function StartRaceScreen() {
+  const router = useRouter();
   // Helper to format seconds as hh:mm:ss
   const formatClock = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -138,6 +140,12 @@ export default function StartRaceScreen() {
         </>
       )}
       <Leaderboard />
+      <View style={{ marginTop: 24 }}>
+        <Button
+          title="Back to Add Racers"
+          onPress={() => router.replace('/add-racer')}
+        />
+      </View>
     </View>
   );
 }

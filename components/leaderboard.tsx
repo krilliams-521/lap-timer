@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import { useRace } from './race-context';
 
 export default function Leaderboard() {
   const { race } = useRace();
+  const router = useRouter();
   if (!race || !race.endTime) return null;
 
   // Sort by lapsCompleted desc, then by total time asc
@@ -41,6 +43,12 @@ export default function Leaderboard() {
           </View>
         </View>
       ))}
+      <View style={{ marginTop: 24 }}>
+        <Button
+          title="Back to Race"
+          onPress={() => router.replace('/start-race')}
+        />
+      </View>
     </View>
   );
 }
