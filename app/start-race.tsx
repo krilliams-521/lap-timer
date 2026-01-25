@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import Leaderboard from '../components/leaderboard';
 import { useRace } from '../components/race-context';
 import { useRacers } from '../components/racer-context';
 
@@ -135,7 +136,7 @@ export default function StartRaceScreen() {
           </View>
         </>
       )}
-      {/* Leaderboard component will go here */}
+      <Leaderboard />
     </View>
   );
 }
