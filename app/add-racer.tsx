@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRacers } from '../components/racer-context';
@@ -42,13 +43,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
-
 export default function AddRacerScreen() {
   const numberInputRef = useRef<TextInput>(null);
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const { addRacer, racers, clearRacers } = useRacers();
+  const router = useRouter();
 
   const handleAdd = () => {
     if (name.trim() && number.trim()) {
@@ -111,11 +112,17 @@ export default function AddRacerScreen() {
         </View>
       )}
       {racers.length > 0 && (
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 20, width: '80%' }}>
           <Button
             title="Clear All Racers"
             onPress={handleClearRacers}
             color="red"
+          />
+          <View style={{ height: 12 }} />
+          <Button
+            title="Start Race"
+            onPress={() => router.push('/start-race')}
+            color="#007AFF"
           />
         </View>
       )}
