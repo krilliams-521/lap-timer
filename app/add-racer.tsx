@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRacers } from '../components/racer-context';
 import { Racer } from '../components/types';
 
@@ -44,10 +44,11 @@ const styles = StyleSheet.create({
 });
 
 export default function AddRacerScreen() {
+  const numberInputRef = useRef<TextInput>(null);
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const { addRacer, racers } = useRacers();
+  const { addRacer, racers, clearRacers } = useRacers();
 
   const handleAdd = () => {
     if (name.trim() && number.trim()) {
@@ -62,8 +63,20 @@ export default function AddRacerScreen() {
       setSubmitted(true);
       setName('');
       setNumber('');
+      numberInputRef.current?.blur();
       setTimeout(() => setSubmitted(false), 1500);
     }
+  };
+
+  const handleClearRacers = () => {
+    Alert.alert(
+      'Clear All Racers',
+      'Are you sure you want to remove all racers?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear', style: 'destructive', onPress: () => clearRacers() },
+      ],
+    );
   };
 
   return (
@@ -76,6 +89,7 @@ export default function AddRacerScreen() {
         onChangeText={setName}
       />
       <TextInput
+        ref={numberInputRef}
         style={styles.input}
         placeholder="Racer Number"
         value={number}
@@ -94,6 +108,15 @@ export default function AddRacerScreen() {
               <Text>#{racer.number}</Text>
             </View>
           ))}
+        </View>
+      )}
+      {racers.length > 0 && (
+        <View style={{ marginTop: 20 }}>
+          <Button
+            title="Clear All Racers"
+            onPress={handleClearRacers}
+            color="red"
+          />
         </View>
       )}
     </View>
