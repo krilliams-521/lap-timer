@@ -1,10 +1,13 @@
 import { Slot } from 'expo-router';
+import { RaceProvider } from '../components/race-context';
 import { RacerProvider } from '../components/racer-context';
 
-export default function RootLayout() {
+export default function Layout() {
   return (
-    <RacerProvider>
-      <Slot />
-    </RacerProvider>
+    <RaceProvider>
+      <RacerProvider>
+        <Slot />
+      </RacerProvider>
+    </RaceProvider>
   );
 }

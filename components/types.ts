@@ -10,3 +10,14 @@ export interface Racer {
   lapTimes: number[];
   lapsCompleted: number;
 }
+
+/**
+ * Represents a race session.
+ */
+export interface Race {
+  racers: Racer[];
+  startTime: Date;
+  endTime: Date | null;
+  totalLaps: number;
+  leaderboard: Racer[];
+}
