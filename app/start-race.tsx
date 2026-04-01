@@ -1,13 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  Button,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import ToggleLapView from '../components/ToggleLapView';
 import Leaderboard from '../components/leaderboard';
 import { useRace } from '../components/race-context';
 import { useRacers } from '../components/racer-context';
@@ -44,7 +38,7 @@ const styles = StyleSheet.create({
 
 export default function StartRaceScreen() {
   const router = useRouter();
-  // Helper to format seconds as hh:mm:ss
+
   const formatClock = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -116,24 +110,12 @@ export default function StartRaceScreen() {
       ) : (
         <>
           <Text style={styles.clock}>Race Time: {formatClock(clock)}</Text>
-          <ScrollView
-            style={{ width: '100%' }}
-            contentContainerStyle={{ alignItems: 'center' }}
-          >
-            {race?.racers.map((racer) => (
-              <View key={racer.id} style={styles.racerButtonRow}>
-                <Button
-                  title={`${racer.name} (#${racer.number})`}
-                  onPress={() => handleLogLap(racer.id)}
-                />
-                <Text style={styles.lapInfo}>
-                  Laps: {racer.lapsCompleted} | Last Lap:{' '}
-                  {racer.lapTimes[racer.lapTimes.length - 1]?.toFixed(2) || '-'}
-                  s
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
+          <ToggleLapView
+            race={race}
+            racers={racers}
+            onLogLap={handleLogLap}
+            styles={styles}
+          />
           <View style={{ marginTop: 24 }}>
             <Button title="End Race" onPress={handleEndRace} color="red" />
           </View>
