@@ -1,3 +1,4 @@
+import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -51,6 +52,7 @@ export default function AddRacerScreen() {
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const { addRacer, racers, clearRacers } = useRacers();
+  const [raceType, setRaceType] = useState('Individual');
   const router = useRouter();
 
   const handleAdd = () => {
@@ -82,9 +84,34 @@ export default function AddRacerScreen() {
     );
   };
 
+  const handleAddFourRacers = () => {
+    const testRacers = [
+      { name: 'Alice', number: '1' },
+      { name: 'Bob', number: '2' },
+      { name: 'Charlie', number: '3' },
+      { name: 'Dana', number: '4' },
+    ];
+    testRacers.forEach(({ name, number }) => {
+      const newRacer: Racer = {
+        id: Math.random().toString(36).substr(2, 9),
+        name,
+        number,
+        lapTimes: [],
+        lapsCompleted: 0,
+      };
+      addRacer(newRacer);
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Add Racer</Text>
+      <Button
+        title="Add 4 Test Racers"
+        onPress={handleAddFourRacers}
+        color="#888"
+      />
+      <View style={{ height: 12 }} />
       <TextInput
         style={styles.input}
         placeholder="Racer Name"
@@ -121,9 +148,27 @@ export default function AddRacerScreen() {
             color="red"
           />
           <View style={{ height: 12 }} />
+          <Text style={{ marginTop: 12, marginBottom: 4 }}>Race Type:</Text>
+          <Picker
+            selectedValue={raceType}
+            onValueChange={(itemValue) => setRaceType(itemValue)}
+            style={{ width: '100%', marginBottom: 12 }}
+          >
+            <Picker.Item label="Individual" value="Individual" />
+            <Picker.Item label="Team" value="Team" />
+          </Picker>
           <Button
-            title="Start Race"
-            onPress={() => router.push('/start-race')}
+            title="Continue"
+            onPress={() => {
+              if (raceType === 'Individual') {
+                router.push({ pathname: '/start-race', params: { raceType } });
+              } else if (raceType === 'Team') {
+                router.push({
+                  pathname: '/select-teams',
+                  params: { raceType },
+                });
+              }
+            }}
             color="#007AFF"
           />
         </View>

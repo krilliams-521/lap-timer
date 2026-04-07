@@ -2,6 +2,7 @@ import { Slot, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { RaceProvider } from '../components/race-context';
 import { RacerProvider, useRacers } from '../components/racer-context';
+import { TeamRaceContextProvider } from '../components/team-race-context';
 
 // Custom wrapper to check racers and redirect if needed
 function LayoutWithRedirect() {
@@ -14,12 +15,13 @@ function LayoutWithRedirect() {
   }, [racers, router]);
   return <Slot />;
 }
-
 export default function Layout() {
   return (
     <RaceProvider>
       <RacerProvider>
-        <LayoutWithRedirect />
+        <TeamRaceContextProvider>
+          <LayoutWithRedirect />
+        </TeamRaceContextProvider>
       </RacerProvider>
     </RaceProvider>
   );
