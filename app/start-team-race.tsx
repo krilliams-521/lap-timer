@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, StyleSheet, Text, View } from 'react-native';
 import LapLogger from '../components/LapLogger';
 import { useTeamRace } from '../components/team-race-context';
 import TeamLeaderboard from '../components/TeamLeaderboard';
@@ -28,13 +28,8 @@ const styles = StyleSheet.create({
 
 export default function StartTeamRaceScreenInner() {
   const router = useRouter();
-  const {
-    teams,
-    racers,
-    logLap,
-    // currentTeamIndex,
-    isRaceFinished,
-  } = useTeamRace();
+  const { teams, racers, logLap, isRaceFinished, setIsRaceFinished } =
+    useTeamRace() as any;
   const [raceStarted, setRaceStarted] = useState(false);
   const [clock, setClock] = useState(0);
   const [logByNumber, setLogByNumber] = useState(false);
@@ -72,14 +67,28 @@ export default function StartTeamRaceScreenInner() {
   };
 
   const handleEndRace = () => {
-    setRaceStarted(false);
+    Alert.alert('End Race', 'Are you sure you want to end the race?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'End Race',
+        style: 'destructive',
+        onPress: () => {
+          setRaceStarted(false);
+          setIsRaceFinished && setIsRaceFinished(true);
+        },
+      },
+    ]);
   };
 
   const handleLogLap = (racerId: string) => {
     // Find the team and racer indices for the given racerId
-    const teamIdx = teams.findIndex((team) => team.members.includes(racerId));
+    const teamIdx = teams.findIndex((team: { members: string[] }) =>
+      team.members.includes(racerId),
+    );
     if (teamIdx === -1) return;
-    const racerIdx = teams[teamIdx].members.findIndex((id) => id === racerId);
+    const racerIdx = teams[teamIdx].members.findIndex(
+      (id: string) => id === racerId,
+    );
     if (racerIdx === -1) return;
     logLap(teamIdx, racerIdx, Date.now());
   };
@@ -87,9 +96,10 @@ export default function StartTeamRaceScreenInner() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Team Race</Text>
-      {!raceStarted ? (
+      {!raceStarted && !isRaceFinished ? (
         <Button title="Start Race" onPress={handleStartRace} />
-      ) : (
+      ) : null}
+      {raceStarted && !isRaceFinished ? (
         <>
           <Text style={styles.clock}>Race Time: {formatClock(clock)}</Text>
           <LapLogger
@@ -104,8 +114,8 @@ export default function StartTeamRaceScreenInner() {
             <Button title="End Race" onPress={handleEndRace} color="red" />
           </View>
         </>
-      )}
-      <TeamLeaderboard />
+      ) : null}
+      {isRaceFinished ? <TeamLeaderboard /> : null}
       <View style={{ marginTop: 24 }}>
         <Button
           title="Back to Add Racers"

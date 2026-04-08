@@ -23,6 +23,7 @@ interface TeamRaceContextType {
   currentRacerIndex: number;
   teamLapData: TeamLapData;
   isRaceFinished: boolean;
+  setIsRaceFinished?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TeamRaceContext = createContext<TeamRaceContextType | undefined>(
@@ -39,6 +40,9 @@ export const TeamRaceContextProvider: React.FC<{
   const [currentRacerIndex, setCurrentRacerIndex] = useState(0);
   const [isRaceFinished, setIsRaceFinished] = useState(false);
 
+  // Track race start time for lap duration calculation
+  const [raceStartTime, setRaceStartTime] = useState<number | null>(null);
+
   const logLap = (teamIdx: number, racerIdx: number, timestamp: number) => {
     const team = teams[teamIdx];
     if (!team) return;
@@ -50,7 +54,19 @@ export const TeamRaceContextProvider: React.FC<{
         racerLapTimes: {},
       };
       const racerLapTimes = prevTeam.racerLapTimes[racerId] || [];
-      const newLapTimes = [...racerLapTimes, timestamp];
+      // Calculate lap duration
+      let lapDuration = 0;
+      if (raceStartTime === null) {
+        setRaceStartTime(timestamp);
+        lapDuration = 0;
+      } else if (racerLapTimes.length === 0) {
+        lapDuration = timestamp - raceStartTime;
+      } else {
+        // Sum previous lap durations to get last lap's end
+        const prevLapSum = racerLapTimes.reduce((a, b) => a + b, 0);
+        lapDuration = timestamp - raceStartTime - prevLapSum;
+      }
+      const newLapTimes = [...racerLapTimes, lapDuration];
       const newLaps = prevTeam.laps + 1;
       // For demo, just increment totalTime by 1 per lap
       const newTotalTime = prevTeam.totalTime + 1;
@@ -84,6 +100,7 @@ export const TeamRaceContextProvider: React.FC<{
         currentRacerIndex,
         teamLapData,
         isRaceFinished,
+        setIsRaceFinished,
       }}
     >
       {children}
