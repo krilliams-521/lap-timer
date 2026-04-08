@@ -1,66 +1,117 @@
-import React, { useState } from 'react';
-import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import LapLogger from '../components/LapLogger';
 import { useTeamRace } from '../components/team-race-context';
 import TeamLeaderboard from '../components/TeamLeaderboard';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 36,
-    paddingBottom: 48,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: 36,
+    paddingTop: 64,
+    paddingBottom: 36,
     backgroundColor: '#fff',
   },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
-  lapButton: { marginVertical: 12 },
-  team: { marginBottom: 16 },
-  racer: { fontSize: 16, marginBottom: 4 },
+  title: {
+    fontSize: 24,
+    marginBottom: 24,
+  },
+  clock: {
+    fontSize: 20,
+    marginBottom: 24,
+    fontWeight: 'bold',
+  },
 });
 
-function StartTeamRaceScreenInner() {
+export default function StartTeamRaceScreenInner() {
+  const router = useRouter();
   const {
     teams,
     racers,
     logLap,
-    currentTeamIndex,
-    currentRacerIndex,
-    teamLapData,
+    // currentTeamIndex,
     isRaceFinished,
   } = useTeamRace();
-  const [lapInProgress, setLapInProgress] = useState(false);
+  const [raceStarted, setRaceStarted] = useState(false);
+  const [clock, setClock] = useState(0);
+  const [logByNumber, setLogByNumber] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (raceStarted && !isRaceFinished) {
+      timerRef.current = setInterval(() => {
+        setClock((prev) => prev + 1);
+      }, 1000) as unknown as number;
+    } else {
+      setClock(0);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [raceStarted, isRaceFinished]);
 
   if (!teams || teams.length === 0) {
     return <Text>No teams found. Please assign teams first.</Text>;
   }
 
-  const currentTeam = teams[currentTeamIndex];
-  const currentRacerId = currentTeam.members[currentRacerIndex];
-  const currentRacer = racers.find((r) => r.id === currentRacerId);
+  const formatClock = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return [hours, minutes, seconds]
+      .map((v) => v.toString().padStart(2, '0'))
+      .join(':');
+  };
 
-  const handleLogLap = () => {
-    setLapInProgress(true);
-    logLap(currentTeamIndex, currentRacerIndex, Date.now());
-    setLapInProgress(false);
+  const handleStartRace = () => {
+    setRaceStarted(true);
+  };
+
+  const handleEndRace = () => {
+    setRaceStarted(false);
+  };
+
+  const handleLogLap = (racerId: string) => {
+    // Find the team and racer indices for the given racerId
+    const teamIdx = teams.findIndex((team) => team.members.includes(racerId));
+    if (teamIdx === -1) return;
+    const racerIdx = teams[teamIdx].members.findIndex((id) => id === racerId);
+    if (racerIdx === -1) return;
+    logLap(teamIdx, racerIdx, Date.now());
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Team Race</Text>
-      <Text>Current Team: Team {currentTeamIndex + 1}</Text>
-      <Text>
-        Current Racer:{' '}
-        {currentRacer ? `${currentRacer.name} (#${currentRacer.number})` : ''}
-      </Text>
-      <View style={styles.lapButton}>
+      {!raceStarted ? (
+        <Button title="Start Race" onPress={handleStartRace} />
+      ) : (
+        <>
+          <Text style={styles.clock}>Race Time: {formatClock(clock)}</Text>
+          <LapLogger
+            mode="team"
+            racers={racers}
+            onTeamLogLap={handleLogLap}
+            raceStarted={raceStarted && !isRaceFinished}
+            logByNumber={logByNumber}
+            setLogByNumber={setLogByNumber}
+          />
+          <View style={{ marginTop: 24 }}>
+            <Button title="End Race" onPress={handleEndRace} color="red" />
+          </View>
+        </>
+      )}
+      <TeamLeaderboard />
+      <View style={{ marginTop: 24 }}>
         <Button
-          title="Log Lap"
-          onPress={handleLogLap}
-          disabled={lapInProgress || isRaceFinished}
+          title="Back to Add Racers"
+          onPress={() => router.replace('/add-racer')}
         />
       </View>
-      <TeamLeaderboard />
-    </SafeAreaView>
+    </View>
   );
 }
-
-export default StartTeamRaceScreenInner;

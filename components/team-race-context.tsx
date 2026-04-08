@@ -54,7 +54,7 @@ export const TeamRaceContextProvider: React.FC<{
       const newLaps = prevTeam.laps + 1;
       // For demo, just increment totalTime by 1 per lap
       const newTotalTime = prevTeam.totalTime + 1;
-      return {
+      const updated = {
         ...prev,
         [team.id]: {
           laps: newLaps,
@@ -65,18 +65,12 @@ export const TeamRaceContextProvider: React.FC<{
           },
         },
       };
+      // For demo, finish after 10 laps per team
+      if (Object.values(updated).every((d) => d.laps >= 10)) {
+        setIsRaceFinished(true);
+      }
+      return updated;
     });
-    // Move to next racer in team (relay)
-    if (racerIdx === 0) {
-      setCurrentRacerIndex(1);
-    } else {
-      setCurrentRacerIndex(0);
-      setCurrentTeamIndex((prev) => (prev + 1) % teams.length);
-    }
-    // For demo, finish after 10 laps per team
-    if (Object.values(teamLapData).every((d) => d.laps >= 10)) {
-      setIsRaceFinished(true);
-    }
   };
 
   return (

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, View } from 'react-native';
-import ToggleLapView from '../components/ToggleLapView';
+import LapLogger from '../components/LapLogger';
 import Leaderboard from '../components/leaderboard';
 import { useRace } from '../components/race-context';
 import { useRacers } from '../components/racer-context';
@@ -51,6 +51,7 @@ export default function StartRaceScreen() {
   const { race, startRace, logLap, endRace } = useRace();
   const [raceStarted, setRaceStarted] = useState(false);
   const [clock, setClock] = useState(0);
+  const [logByNumber, setLogByNumber] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -110,11 +111,13 @@ export default function StartRaceScreen() {
       ) : (
         <>
           <Text style={styles.clock}>Race Time: {formatClock(clock)}</Text>
-          <ToggleLapView
-            race={race}
+          <LapLogger
+            mode="individual"
             racers={racers}
             onLogLap={handleLogLap}
-            styles={styles}
+            raceStarted={raceStarted}
+            logByNumber={logByNumber}
+            setLogByNumber={setLogByNumber}
           />
           <View style={{ marginTop: 24 }}>
             <Button title="End Race" onPress={handleEndRace} color="red" />
