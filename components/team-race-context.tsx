@@ -24,6 +24,7 @@ interface TeamRaceContextType {
   teamLapData: TeamLapData;
   isRaceFinished: boolean;
   setIsRaceFinished?: React.Dispatch<React.SetStateAction<boolean>>;
+  resetTeamRace: () => void;
 }
 
 const TeamRaceContext = createContext<TeamRaceContextType | undefined>(
@@ -89,6 +90,15 @@ export const TeamRaceContextProvider: React.FC<{
     });
   };
 
+  const resetTeamRace = () => {
+    setTeams([]);
+    setTeamLapData({});
+    setCurrentTeamIndex(0);
+    setCurrentRacerIndex(0);
+    setIsRaceFinished(false);
+    setRaceStartTime(null);
+  };
+
   return (
     <TeamRaceContext.Provider
       value={{
@@ -101,6 +111,7 @@ export const TeamRaceContextProvider: React.FC<{
         teamLapData,
         isRaceFinished,
         setIsRaceFinished,
+        resetTeamRace,
       }}
     >
       {children}

@@ -16,6 +16,8 @@ import { useTeamRace } from '../components/team-race-context';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center', // Center vertically
+    alignItems: 'center', // Center horizontally
     paddingHorizontal: 24,
     paddingTop: 36,
     paddingBottom: 48,
@@ -84,49 +86,54 @@ function SelectTeamsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Select Teams</Text>
-      <Text style={styles.subtitle}>Unassigned Racers</Text>
-      <FlatList
-        data={unassigned}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.racer,
-              selected.includes(item.id) && styles.selected,
-            ]}
-            onPress={() => handleSelect(item.id)}
-          >
+      <View style={{ width: '100%', alignItems: 'center' }}>
+        <Text style={styles.title}>Select Teams</Text>
+        <Text style={styles.subtitle}>Unassigned Racers</Text>
+        <FlatList
+          style={{ width: '100%' }}
+          contentContainerStyle={{ alignItems: 'center' }}
+          data={unassigned}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.racer,
+                selected.includes(item.id) && styles.selected,
+                { width: '90%' },
+              ]}
+              onPress={() => handleSelect(item.id)}
+            >
+              <Text>
+                {item.name} (#{item.number})
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+        <Button
+          title="Add Team"
+          onPress={handleAddTeam}
+          disabled={selected.length !== 2}
+        />
+        <Text style={styles.subtitle}>Teams</Text>
+        {teams.map((team, idx) => (
+          <View key={team.id} style={[styles.team, { width: '90%' }]}>
+            <Text style={styles.teamLabel}>Team {idx + 1}:</Text>
             <Text>
-              {item.name} (#{item.number})
+              {team.members
+                .map((id) => {
+                  const racer = racers.find((r) => r.id === id);
+                  return racer ? `${racer.name} (#${racer.number})` : '';
+                })
+                .join(' & ')}
             </Text>
-          </TouchableOpacity>
-        )}
-      />
-      <Button
-        title="Add Team"
-        onPress={handleAddTeam}
-        disabled={selected.length !== 2}
-      />
-      <Text style={styles.subtitle}>Teams</Text>
-      {teams.map((team, idx) => (
-        <View key={team.id} style={styles.team}>
-          <Text style={styles.teamLabel}>Team {idx + 1}:</Text>
-          <Text>
-            {team.members
-              .map((id) => {
-                const racer = racers.find((r) => r.id === id);
-                return racer ? `${racer.name} (#${racer.number})` : '';
-              })
-              .join(' & ')}
-          </Text>
-        </View>
-      ))}
-      <Button
-        title="Continue"
-        onPress={handleContinue}
-        disabled={teams.length * 2 !== racers.length}
-      />
+          </View>
+        ))}
+        <Button
+          title="Continue"
+          onPress={handleContinue}
+          disabled={teams.length * 2 !== racers.length}
+        />
+      </View>
     </SafeAreaView>
   );
 }

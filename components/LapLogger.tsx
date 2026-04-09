@@ -21,7 +21,7 @@ export type LapLoggerProps = {
 };
 
 const styles = StyleSheet.create({
-  container: { marginVertical: 16 },
+  container: { marginVertical: 16, minWidth: 200 },
   racerButton: {
     padding: 12,
     backgroundColor: '#007AFF',
