@@ -25,11 +25,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default function StartTeamRaceScreenInner() {
+export default function StartTeamRace() {
   const router = useRouter();
-  const { teams, racers, logLap, isRaceFinished, setIsRaceFinished } =
-    useTeamRace() as any;
+  const {
+    teams,
+    racers,
+    logLap,
+    isRaceFinished,
+    setIsRaceFinished,
+    setRaceStartTime,
+  } = useTeamRace() as any;
   const [raceStarted, setRaceStarted] = useState(false);
   const [clock, setClock] = useState(0);
   const [logByNumber, setLogByNumber] = useState(false);
@@ -63,6 +68,7 @@ export default function StartTeamRaceScreenInner() {
   };
 
   const handleStartRace = () => {
+    setRaceStartTime(Date.now());
     setRaceStarted(true);
   };
 

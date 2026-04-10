@@ -25,6 +25,8 @@ interface TeamRaceContextType {
   isRaceFinished: boolean;
   setIsRaceFinished?: React.Dispatch<React.SetStateAction<boolean>>;
   resetTeamRace: () => void;
+  raceStartTime: number | null;
+  setRaceStartTime: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 const TeamRaceContext = createContext<TeamRaceContextType | undefined>(
@@ -55,18 +57,36 @@ export const TeamRaceContextProvider: React.FC<{
         racerLapTimes: {},
       };
       const racerLapTimes = prevTeam.racerLapTimes[racerId] || [];
-      // Calculate lap duration
+
+      // Find the last lap timestamp for the team (any member)
+      let lastLapTimestamp: number | null = null;
+      // Gather all lap end timestamps for this team
+      const allLapTimestamps: number[] = [];
+      for (const memberId of team.members) {
+        const memberLapTimes = prevTeam.racerLapTimes[memberId] || [];
+        let memberLapSum = 0;
+        for (const lap of memberLapTimes) {
+          memberLapSum += lap;
+          allLapTimestamps.push(memberLapSum);
+        }
+      }
+      if (allLapTimestamps.length > 0) {
+        // Last lap end is the max
+        lastLapTimestamp = Math.max(...allLapTimestamps);
+      }
+
       let lapDuration = 0;
       if (raceStartTime === null) {
         setRaceStartTime(timestamp);
         lapDuration = 0;
-      } else if (racerLapTimes.length === 0) {
+      } else if (allLapTimestamps.length === 0) {
+        // First lap for the team: time since race start
         lapDuration = timestamp - raceStartTime;
       } else {
-        // Sum previous lap durations to get last lap's end
-        const prevLapSum = racerLapTimes.reduce((a, b) => a + b, 0);
-        lapDuration = timestamp - raceStartTime - prevLapSum;
+        // Subsequent laps: time since last lap by any teammate
+        lapDuration = timestamp - (raceStartTime + lastLapTimestamp!);
       }
+
       const newLapTimes = [...racerLapTimes, lapDuration];
       const newLaps = prevTeam.laps + 1;
       // For demo, just increment totalTime by 1 per lap
@@ -112,6 +132,8 @@ export const TeamRaceContextProvider: React.FC<{
         isRaceFinished,
         setIsRaceFinished,
         resetTeamRace,
+        raceStartTime,
+        setRaceStartTime,
       }}
     >
       {children}

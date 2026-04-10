@@ -1,5 +1,13 @@
+import * as Clipboard from 'expo-clipboard';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useTeamRace } from './team-race-context';
 
 const styles = StyleSheet.create({
@@ -71,11 +79,46 @@ const styles = StyleSheet.create({
 
 export default function TeamLeaderboard() {
   const { teams, teamLapData, racers } = useTeamRace();
+
+  // CSV export logic
+  const generateCSV = () => {
+    // Header
+    let csv = 'Team,Member,Lap #,Lap Time (ms)\n';
+    teams.forEach((team, teamIdx) => {
+      const data = teamLapData[team.id] || { racerLapTimes: {} };
+      team.members.forEach((racerId) => {
+        const racer = racers.find((r) => r.id === racerId);
+        const lapTimes = data.racerLapTimes?.[racerId] || [];
+        lapTimes.forEach((lap, i) => {
+          csv += `Team ${teamIdx + 1},${racer ? racer.name : ''} (#${racer ? racer.number : ''}),${i + 1},${lap}\n`;
+        });
+        if (lapTimes.length === 0) {
+          csv += `Team ${teamIdx + 1},${racer ? racer.name : ''} (#${racer ? racer.number : ''}),,\n`;
+        }
+      });
+    });
+    return csv;
+  };
+
+  const handlePreviewCSV = () => {
+    const csv = generateCSV();
+    Alert.alert(
+      'CSV Preview',
+      csv.length > 1000 ? csv.slice(0, 1000) + '\n...truncated...' : csv,
+    );
+  };
   // Helper to format lap time in mm:ss.SSS
   const formatLap = (ms: number) => {
     const min = Math.floor(ms / 60000);
     const sec = ((ms % 60000) / 1000).toFixed(3);
     return `${min}:${sec.padStart(6, '0')}`;
+  };
+
+  // Copy CSV to clipboard
+  const handleCopyCSV = async () => {
+    const csv = generateCSV();
+    await Clipboard.setStringAsync(csv);
+    Alert.alert('Copied', 'CSV data copied to clipboard!');
   };
 
   // Calculate real total time for each team
@@ -96,19 +139,27 @@ export default function TeamLeaderboard() {
   });
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={{ width: '100%' }}
+      contentContainerStyle={styles.container}
+    >
       <Text style={styles.title}>Final Team Results</Text>
+      <Button title="Preview CSV" onPress={handlePreviewCSV} />
+      <View style={{ height: 8 }} />
+      <Button title="Copy CSV to Clipboard" onPress={handleCopyCSV} />
+      {/* ...existing code... */}
       {sorted.map((team, idx) => {
         const data = teamLapData[team.id] || {
           laps: 0,
           totalTime: 0,
           racerLapTimes: {},
         };
-        // Find the original team number (1-based)
+        // Fix: define teamNumber and teamTotalTime here
         const teamNumber = teams.findIndex((t) => t.id === team.id) + 1;
         const teamTotalTime = getTeamTotalTime(team.id);
         return (
           <View key={team.id} style={styles.teamBlock}>
+            {/* ...existing code... */}
             <View style={styles.teamHeader}>
               <Text style={styles.position}>{idx + 1}.</Text>
               <Text style={styles.teamLabel}>Team {teamNumber}</Text>
@@ -149,6 +200,6 @@ export default function TeamLeaderboard() {
           </View>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
