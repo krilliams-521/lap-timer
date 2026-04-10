@@ -10,10 +10,14 @@ function LayoutWithRedirect() {
   const router = useRouter();
   const segments = useSegments();
   useEffect(() => {
-    // segments is an array, e.g. ['add-racer']
+    // Only redirect if router is ready and not already on add-racer
+    if (!router || !router.replace) return;
     const isOnAddRacer = segments[0] === 'add-racer';
+    // Avoid redirecting before router is mounted
     if (racers.length === 0 && !isOnAddRacer) {
-      router.replace('/add-racer');
+      setTimeout(() => {
+        router.replace('/add-racer');
+      }, 0);
     }
   }, [racers, router, segments]);
   return <Slot />;
