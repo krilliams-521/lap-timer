@@ -1,6 +1,6 @@
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Alert,
   Button,
@@ -10,11 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useRace } from '../components/race-context';
 import { useRacers } from '../components/racer-context';
-import { useTeamRace } from '../components/team-race-context';
-
-import { useIsFocused } from '@react-navigation/native';
 import { Racer } from '../components/types';
 
 const styles = StyleSheet.create({
@@ -66,19 +62,10 @@ export default function AddRacerScreen() {
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const { addRacer, racers, clearRacers } = useRacers();
-  const { resetRace } = useRace();
-  const { resetTeamRace } = useTeamRace();
   const [raceType, setRaceType] = useState('Individual');
   const router = useRouter();
-  const isFocused = useIsFocused();
 
-  useEffect(() => {
-    if (isFocused) {
-      clearRacers();
-      resetRace();
-      resetTeamRace();
-    }
-  }, [isFocused, clearRacers, resetRace, resetTeamRace]);
+  // Removed automatic clearing of racers and race state on page load
 
   const handleAdd = () => {
     if (name.trim() && number.trim()) {
