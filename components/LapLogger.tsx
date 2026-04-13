@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Button,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -138,7 +139,10 @@ export default function LapLogger(props: LapLoggerProps) {
           />
         </View>
       ) : (
-        <View>
+        <ScrollView
+          style={{ maxHeight: 320, width: '100%' }}
+          contentContainerStyle={{ paddingBottom: 8 }}
+        >
           {racers.map((racer: Racer) => (
             <TouchableOpacity
               key={racer.id}
@@ -156,7 +160,7 @@ export default function LapLogger(props: LapLoggerProps) {
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       )}
     </View>
   );

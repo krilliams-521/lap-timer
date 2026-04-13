@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRace } from './race-context';
 
 export default function Leaderboard() {
@@ -27,22 +27,27 @@ export default function Leaderboard() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Final Results</Text>
-      {sorted.map((racer, idx) => (
-        <View key={racer.id} style={styles.finalRow}>
-          <Text style={styles.position}>{idx + 1}.</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{racer.name}</Text>
-            <Text style={styles.laps}>Laps: {racer.lapsCompleted}</Text>
-            <View style={styles.lapTimesRow}>
-              {racer.lapTimes.map((lap, i) => (
-                <Text key={i} style={styles.lapTime}>
-                  Lap {i + 1}: {formatLap(lap)}
-                </Text>
-              ))}
+      <ScrollView
+        style={{ maxHeight: 400, width: '100%' }}
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 8 }}
+      >
+        {sorted.map((racer, idx) => (
+          <View key={racer.id} style={styles.finalRow}>
+            <Text style={styles.position}>{idx + 1}.</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.name}>{racer.name}</Text>
+              <Text style={styles.laps}>Laps: {racer.lapsCompleted}</Text>
+              <View style={styles.lapTimesRow}>
+                {racer.lapTimes.map((lap, i) => (
+                  <Text key={i} style={styles.lapTime}>
+                    Lap {i + 1}: {formatLap(lap)}
+                  </Text>
+                ))}
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        ))}
+      </ScrollView>
       <View style={{ marginTop: 24 }}>
         <Button
           title="Back to Race"

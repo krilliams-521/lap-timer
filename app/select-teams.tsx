@@ -16,7 +16,6 @@ import { useTeamRace } from '../components/team-race-context';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // Center vertically
     alignItems: 'center', // Center horizontally
     paddingHorizontal: 24,
     paddingTop: 36,
@@ -86,11 +85,11 @@ function SelectTeamsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ width: '100%', alignItems: 'center' }}>
+      <View style={{ width: '100%', alignItems: 'center', flex: 1 }}>
         <Text style={styles.title}>Select Teams</Text>
         <Text style={styles.subtitle}>Unassigned Racers</Text>
         <FlatList
-          style={{ width: '100%' }}
+          style={{ width: '100%', maxHeight: 320 }}
           contentContainerStyle={{ alignItems: 'center' }}
           data={unassigned}
           keyExtractor={(item) => item.id}

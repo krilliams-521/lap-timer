@@ -1,7 +1,15 @@
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useRace } from '../components/race-context';
 import { useRacers } from '../components/racer-context';
 import { useTeamRace } from '../components/team-race-context';
@@ -39,6 +47,7 @@ const styles = StyleSheet.create({
   racerListContainer: {
     width: '80%',
     marginTop: 24,
+    maxHeight: 300, // Limit height for scroll
   },
   racerListTitle: {
     fontWeight: 'bold',
@@ -119,12 +128,42 @@ export default function AddRacerScreen() {
     });
   };
 
+  // Add 20 riders automatically
+  const handleAddTwentyRiders = () => {
+    for (let i = 1; i <= 20; i++) {
+      const newRacer: Racer = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: `Rider ${i}`,
+        number: `${i}`,
+        lapTimes: [],
+        lapsCompleted: 0,
+      };
+      addRacer(newRacer);
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 36,
+        paddingTop: 64,
+        paddingBottom: 36,
+      }}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>Add Racer</Text>
       <Button
         title="Add 4 Test Racers"
         onPress={handleAddFourRacers}
+        color="#888"
+      />
+      <View style={{ height: 8 }} />
+      <Button
+        title="Add 20 Riders Automatically"
+        onPress={handleAddTwentyRiders}
         color="#888"
       />
       <View style={{ height: 12 }} />
@@ -148,12 +187,14 @@ export default function AddRacerScreen() {
       {racers.length > 0 && (
         <View style={styles.racerListContainer}>
           <Text style={styles.racerListTitle}>Racers:</Text>
-          {racers.map((racer) => (
-            <View key={racer.id} style={styles.racerRow}>
-              <Text>{racer.name}</Text>
-              <Text>#{racer.number}</Text>
-            </View>
-          ))}
+          <ScrollView style={{ maxHeight: 300 }}>
+            {racers.map((racer) => (
+              <View key={racer.id} style={styles.racerRow}>
+                <Text>{racer.name}</Text>
+                <Text>#{racer.number}</Text>
+              </View>
+            ))}
+          </ScrollView>
         </View>
       )}
       {racers.length > 0 && (
@@ -189,6 +230,6 @@ export default function AddRacerScreen() {
           />
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
