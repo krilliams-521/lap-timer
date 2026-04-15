@@ -83,19 +83,43 @@ export default function TeamLeaderboard() {
   // CSV export logic
   const generateCSV = () => {
     // Header
-    let csv = 'Team,Member,Lap #,Lap Time (ms)\n';
+    let csv = 'Order,Team,Member,Lap #,Lap Time,Completed At\n';
+    // Collect all laps with metadata
+    type ExportLap = {
+      team: string;
+      member: string;
+      lapNumber: number;
+      lapTime: number;
+      completedAt: number;
+    };
+    let allLaps: ExportLap[] = [];
     teams.forEach((team, teamIdx) => {
       const data = teamLapData[team.id] || { racerLapTimes: {} };
       team.members.forEach((racerId) => {
         const racer = racers.find((r) => r.id === racerId);
-        const lapTimes = data.racerLapTimes?.[racerId] || [];
-        lapTimes.forEach((lap, i) => {
-          csv += `Team ${teamIdx + 1},${racer ? racer.name : ''} (#${racer ? racer.number : ''}),${i + 1},${lap}\n`;
-        });
-        if (lapTimes.length === 0) {
-          csv += `Team ${teamIdx + 1},${racer ? racer.name : ''} (#${racer ? racer.number : ''}),,\n`;
-        }
+        const laps = (data.racerLapTimes?.[racerId] || []).map(
+          (lap: { lapTime: number; completedAt: number }, i: number) => ({
+            team: `Team ${teamIdx + 1}`,
+            member: `${racer ? racer.name : ''} (#${racer ? racer.number : ''})`,
+            lapNumber: i + 1,
+            lapTime: lap.lapTime,
+            completedAt: lap.completedAt,
+          }),
+        );
+        allLaps.push(...laps);
       });
+    });
+    // Sort by completedAt
+    allLaps.sort((a, b) => a.completedAt - b.completedAt);
+    // Helper to format lap time in mm:ss.SSS
+    const formatLap = (ms: number) => {
+      const min = Math.floor(ms / 60000);
+      const sec = ((ms % 60000) / 1000).toFixed(3);
+      return `${min}:${sec.padStart(6, '0')}`;
+    };
+    // Write to CSV
+    allLaps.forEach((lap, idx) => {
+      csv += `${idx + 1},${lap.team},${lap.member},${lap.lapNumber},${formatLap(lap.lapTime)},${lap.completedAt}\n`;
     });
     return csv;
   };
@@ -127,7 +151,7 @@ export default function TeamLeaderboard() {
     if (!data) return 0;
     return Object.values(data.racerLapTimes || {})
       .flat()
-      .reduce((a, b) => a + b, 0);
+      .reduce((a, b) => a + (b.lapTime ?? 0), 0);
   };
 
   // Sort teams by laps, then by real total time
@@ -176,7 +200,10 @@ export default function TeamLeaderboard() {
             </Text>
             {team.members.map((id) => {
               const racer = racers.find((r) => r.id === id);
-              const lapTimes = data.racerLapTimes?.[id] || [];
+              const lapTimes = (data.racerLapTimes?.[id] || []).filter(
+                (lap: { lapTime: number; completedAt: number }) =>
+                  lap.lapTime >= 0,
+              );
               if (!racer) return null;
               return (
                 <View key={id} style={styles.racerBlock}>
@@ -185,11 +212,11 @@ export default function TeamLeaderboard() {
                   </Text>
                   <View style={styles.lapTimesRow}>
                     {lapTimes.length === 0 ? (
-                      <Text style={styles.lapTime}>No laps</Text>
+                      <Text style={styles.lapTime}>No valid laps</Text>
                     ) : (
                       lapTimes.map((lap, i) => (
                         <Text key={i} style={styles.lapTime}>
-                          Lap {i + 1}: {formatLap(lap)}
+                          Lap {i + 1}: {formatLap(lap.lapTime)}
                         </Text>
                       ))
                     )}

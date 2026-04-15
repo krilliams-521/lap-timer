@@ -73,8 +73,6 @@ export default function AddRacerScreen() {
         id: Math.random().toString(36).substr(2, 9),
         name: name.trim(),
         number: number.trim(),
-        lapTimes: [],
-        lapsCompleted: 0,
       };
       addRacer(newRacer);
       setSubmitted(true);
@@ -108,8 +106,6 @@ export default function AddRacerScreen() {
         id: Math.random().toString(36).substr(2, 9),
         name,
         number,
-        lapTimes: [],
-        lapsCompleted: 0,
       };
       addRacer(newRacer);
     });
@@ -122,8 +118,6 @@ export default function AddRacerScreen() {
         id: Math.random().toString(36).substr(2, 9),
         name: `Rider ${i}`,
         number: `${i}`,
-        lapTimes: [],
-        lapsCompleted: 0,
       };
       addRacer(newRacer);
     }

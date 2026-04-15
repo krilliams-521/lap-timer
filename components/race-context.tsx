@@ -5,7 +5,7 @@ interface RaceContextType {
   race: Race | null;
   startRace: (racers: Racer[], totalLaps: number) => void;
   endRace: () => void;
-  logLap: (racerId: string, time: number) => void;
+  logLap: (racerId: string, lapTime: number) => void;
   resetRace: () => void;
 }
 
@@ -16,11 +16,17 @@ export const RaceProvider = ({ children }: { children: ReactNode }) => {
 
   const startRace = (racers: Racer[], totalLaps: number) => {
     setRace({
-      racers: racers.map((r) => ({ ...r, lapTimes: [], lapsCompleted: 0 })),
+      racers,
       startTime: new Date(),
       endTime: null,
       totalLaps,
       leaderboard: [],
+      laps: [
+        {
+          lapNumber: 1,
+          results: [],
+        },
+      ],
     });
   };
 
@@ -28,20 +34,39 @@ export const RaceProvider = ({ children }: { children: ReactNode }) => {
     setRace((prev) => (prev ? { ...prev, endTime: new Date() } : prev));
   };
 
-  const logLap = (racerId: string, time: number) => {
+  const logLap = (racerId: string, lapTime: number) => {
     setRace((prev) => {
       if (!prev) return prev;
-      const racers = prev.racers.map((r) =>
-        r.id === racerId
-          ? {
-              ...r,
-              lapTimes: [...r.lapTimes, time],
-              lapsCompleted: r.lapsCompleted + 1,
-            }
-          : r,
+      const now = Date.now();
+      let laps = [...(prev.laps || [])];
+      // Find the current lap (the first with results not including this racer, or the last lap)
+      let currentLapIdx = laps.findIndex(
+        (lap) => !lap.results.some((res) => res.racerId === racerId),
       );
-      // Leaderboard logic can be added here
-      return { ...prev, racers };
+      if (currentLapIdx === -1) currentLapIdx = laps.length - 1;
+      // If all racers have completed the current lap, start a new lap
+      const currentLap = laps[currentLapIdx];
+      if (
+        currentLap &&
+        currentLap.results.length === prev.racers.length - 1 &&
+        !currentLap.results.some((res) => res.racerId === racerId)
+      ) {
+        // All other racers have finished this lap, so add a new lap
+        laps.push({
+          lapNumber: laps.length + 1,
+          results: [],
+        });
+        currentLapIdx = laps.length - 1;
+      }
+      // Add the lap result
+      laps[currentLapIdx] = {
+        ...laps[currentLapIdx],
+        results: [
+          ...laps[currentLapIdx].results,
+          { racerId, lapTime, completedAt: now },
+        ],
+      };
+      return { ...prev, laps };
     });
   };
 

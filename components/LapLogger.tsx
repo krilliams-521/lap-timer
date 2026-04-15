@@ -14,11 +14,12 @@ import type { Racer } from './types';
 export type LapLoggerProps = {
   mode: 'individual' | 'team';
   racers: Racer[];
-  onLogLap?: (racerId: string) => void;
-  onTeamLogLap?: (racerId: string) => void;
+  onLogLap?: (racerId: string, lapTime: number) => void;
+  onTeamLogLap?: (racerId: string, lapTime: number) => void;
   raceStarted: boolean;
   logByNumber?: boolean;
   setLogByNumber?: (val: boolean) => void;
+  getLapTime?: (racerId: string) => number;
 };
 
 const styles = StyleSheet.create({
@@ -72,6 +73,14 @@ export default function LapLogger(props: LapLoggerProps) {
 
   // Shared UI for both modes
   const isTeam = mode === 'team';
+
+  // Helper to calculate lapTime (in ms) since last lap for this racer
+  const getLapTime = (racerId: string) => {
+    if (props.getLapTime) {
+      return props.getLapTime(racerId);
+    }
+    return 0;
+  };
 
   return (
     <View style={styles.container}>
@@ -129,10 +138,11 @@ export default function LapLogger(props: LapLoggerProps) {
               }
               setNumberError('');
               setNumberInput('');
+              const lapTime = getLapTime(racer.id);
               if (isTeam) {
-                onTeamLogLap && onTeamLogLap(racer.id);
+                onTeamLogLap && onTeamLogLap(racer.id, lapTime);
               } else {
-                onLogLap && onLogLap(racer.id);
+                onLogLap && onLogLap(racer.id, lapTime);
               }
             }}
             disabled={!numberInput.trim()}
@@ -148,10 +158,11 @@ export default function LapLogger(props: LapLoggerProps) {
               key={racer.id}
               style={styles.racerButton}
               onPress={() => {
+                const lapTime = getLapTime(racer.id);
                 if (isTeam) {
-                  onTeamLogLap && onTeamLogLap(racer.id);
+                  onTeamLogLap && onTeamLogLap(racer.id, lapTime);
                 } else {
-                  onLogLap && onLogLap(racer.id);
+                  onLogLap && onLogLap(racer.id, lapTime);
                 }
               }}
             >

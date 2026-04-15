@@ -7,14 +7,36 @@ export default function Leaderboard() {
   const router = useRouter();
   if (!race || !race.endTime) return null;
 
+  // Compute lapsCompleted and lapTimes for each racer from race.laps
+  const racerStats = race.racers.map((racer) => {
+    // Get all lap results for this racer, sorted by lap
+    const lapResults = (race.laps || [])
+      .map((lap) => {
+        const res = lap.results.find((r) => r.racerId === racer.id);
+        return res ? { lapNumber: lap.lapNumber, ...res } : undefined;
+      })
+      .filter(
+        (
+          r,
+        ): r is {
+          lapNumber: number;
+          racerId: string;
+          lapTime: number;
+          completedAt: number;
+        } => r !== undefined,
+      );
+    const lapsCompleted = lapResults.length;
+    const lapTimes = lapResults.map((res) => res.lapTime);
+    const totalTime = lapTimes.reduce((sum, t) => sum + t, 0);
+    return { ...racer, lapsCompleted, lapTimes, totalTime };
+  });
+
   // Sort by lapsCompleted desc, then by total time asc
-  const sorted = [...race.racers].sort((a, b) => {
+  const sorted = racerStats.sort((a, b) => {
     if (b.lapsCompleted !== a.lapsCompleted) {
       return b.lapsCompleted - a.lapsCompleted;
     }
-    const aTime = a.lapTimes.reduce((sum, t) => sum + t, 0);
-    const bTime = b.lapTimes.reduce((sum, t) => sum + t, 0);
-    return aTime - bTime;
+    return a.totalTime - b.totalTime;
   });
 
   // Helper to format lap time in mm:ss.SSS

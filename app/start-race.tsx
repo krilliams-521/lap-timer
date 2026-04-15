@@ -87,20 +87,25 @@ export default function StartRaceScreen() {
     ]);
   };
 
-  const handleLogLap = (racerId: string) => {
+  // Helper to calculate lap time for a racer
+  const getLapTime = (racerId: string) => {
     const now = Date.now();
-    let lapTime = 0;
-    if (race && race.startTime) {
-      const racer = race.racers.find((r) => r.id === racerId);
-      if (racer && racer.lapTimes.length === 0) {
-        lapTime = (now - new Date(race.startTime).getTime()) / 1000;
-      } else if (racer && racer.lapTimes.length > 0) {
-        const lastLap = racer.lapTimes.reduce((a, b) => a + b, 0);
-        lapTime =
-          (now - new Date(race.startTime).getTime() - lastLap * 1000) / 1000;
-      }
+    if (!race || !race.startTime) return 0;
+    const allLapResults = (race.laps || [])
+      .flatMap((lap) => lap.results)
+      .filter((res) => res.racerId === racerId)
+      .sort((a, b) => a.completedAt - b.completedAt);
+    let lastLapCompletedAt = new Date(race.startTime).getTime();
+    if (allLapResults.length > 0) {
+      lastLapCompletedAt = allLapResults[allLapResults.length - 1].completedAt;
     }
-    logLap(racerId, lapTime);
+    return now - lastLapCompletedAt;
+  };
+
+  const handleLogLap = (racerId: string, lapTime?: number) => {
+    // If lapTime is provided (from LapLogger), use it; otherwise, calculate
+    const time = typeof lapTime === 'number' ? lapTime : getLapTime(racerId);
+    logLap(racerId, time);
   };
 
   return (
@@ -118,6 +123,7 @@ export default function StartRaceScreen() {
             raceStarted={raceStarted}
             logByNumber={logByNumber}
             setLogByNumber={setLogByNumber}
+            getLapTime={getLapTime}
           />
           <View style={{ marginTop: 24 }}>
             <Button title="End Race" onPress={handleEndRace} color="red" />

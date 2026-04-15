@@ -10,7 +10,9 @@ interface TeamLapData {
   [teamId: string]: {
     laps: number;
     totalTime: number;
-    racerLapTimes: { [racerId: string]: number[] };
+    racerLapTimes: {
+      [racerId: string]: { lapTime: number; completedAt: number }[];
+    };
   };
 }
 
@@ -58,36 +60,29 @@ export const TeamRaceContextProvider: React.FC<{
       };
       const racerLapTimes = prevTeam.racerLapTimes[racerId] || [];
 
-      // Find the last lap timestamp for the team (any member)
-      let lastLapTimestamp: number | null = null;
-      // Gather all lap end timestamps for this team
-      const allLapTimestamps: number[] = [];
-      for (const memberId of team.members) {
-        const memberLapTimes = prevTeam.racerLapTimes[memberId] || [];
-        let memberLapSum = 0;
-        for (const lap of memberLapTimes) {
-          memberLapSum += lap;
-          allLapTimestamps.push(memberLapSum);
-        }
-      }
-      if (allLapTimestamps.length > 0) {
-        // Last lap end is the max
-        lastLapTimestamp = Math.max(...allLapTimestamps);
-      }
-
+      // Calculate lap time for this racer
       let lapDuration = 0;
+      let newRaceStartTime = raceStartTime;
       if (raceStartTime === null) {
+        newRaceStartTime = timestamp;
         setRaceStartTime(timestamp);
-        lapDuration = 0;
-      } else if (allLapTimestamps.length === 0) {
-        // First lap for the team: time since race start
-        lapDuration = timestamp - raceStartTime;
+      }
+      if (racerLapTimes.length === 0) {
+        // First lap for this racer: time since race start
+        lapDuration = timestamp - (newRaceStartTime ?? timestamp);
       } else {
-        // Subsequent laps: time since last lap by any teammate
-        lapDuration = timestamp - (raceStartTime + lastLapTimestamp!);
+        // Subsequent laps: time since last lap for this racer
+        const lastLapCompletedAt =
+          (newRaceStartTime ?? timestamp) +
+          racerLapTimes.reduce((sum, t) => sum + (t.lapTime ?? 0), 0);
+        lapDuration = timestamp - lastLapCompletedAt;
       }
 
-      const newLapTimes = [...racerLapTimes, lapDuration];
+      // Only add positive lap times
+      const newLapTimes =
+        lapDuration > 0
+          ? [...racerLapTimes, { lapTime: lapDuration, completedAt: timestamp }]
+          : [...racerLapTimes];
       const newLaps = prevTeam.laps + 1;
       // For demo, just increment totalTime by 1 per lap
       const newTotalTime = prevTeam.totalTime + 1;
