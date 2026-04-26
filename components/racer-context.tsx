@@ -1,4 +1,11 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { Racer } from './types';
 
 interface RacerContextType {
@@ -12,6 +19,34 @@ const RacerContext = createContext<RacerContextType | undefined>(undefined);
 
 export const RacerProvider = ({ children }: { children: ReactNode }) => {
   const [racers, setRacers] = useState<Racer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Key for AsyncStorage
+  const STORAGE_KEY = 'racers';
+
+  // Load racers from AsyncStorage on mount
+  useEffect(() => {
+    const loadRacers = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setRacers(JSON.parse(stored));
+        }
+      } catch (e) {
+        // Optionally handle error
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRacers();
+  }, []);
+
+  // Save racers to AsyncStorage whenever they change
+  useEffect(() => {
+    if (!loading) {
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(racers));
+    }
+  }, [racers, loading]);
 
   const addRacer = (racer: Racer) => {
     setRacers((prev) => [...prev, racer]);
