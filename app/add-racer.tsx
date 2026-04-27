@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   racerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center', // vertically center items
     marginBottom: 4,
   },
 });
@@ -61,11 +62,13 @@ export default function AddRacerScreen() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const { addRacer, racers, clearRacers } = useRacers();
+  const { addRacer, racers, clearRacers, editRacer } = useRacers();
   const [raceType, setRaceType] = useState('Individual');
   const router = useRouter();
-
-  // Removed automatic clearing of racers and race state on page load
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editNumber, setEditNumber] = useState('');
 
   const handleAdd = () => {
     if (name.trim() && number.trim()) {
@@ -123,13 +126,33 @@ export default function AddRacerScreen() {
     }
   };
 
+  const startEdit = (racer: Racer) => {
+    setEditingId(racer.id);
+    setEditName(racer.name);
+    setEditNumber(racer.number);
+  };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditName('');
+    setEditNumber('');
+  };
+  const saveEdit = () => {
+    if (editingId && editName.trim() && editNumber.trim()) {
+      editRacer(editingId, {
+        name: editName.trim(),
+        number: editNumber.trim(),
+      });
+      cancelEdit();
+    }
+  };
+
   return (
     <ScrollView
       contentContainerStyle={{
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 36,
+        paddingHorizontal: 20,
         paddingTop: 64,
         paddingBottom: 36,
       }}
@@ -171,8 +194,37 @@ export default function AddRacerScreen() {
           <ScrollView style={{ maxHeight: 300 }}>
             {racers.map((racer) => (
               <View key={racer.id} style={styles.racerRow}>
-                <Text>{racer.name}</Text>
-                <Text>#{racer.number}</Text>
+                {editingId === racer.id ? (
+                  <>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        { marginBottom: 0, width: 100, fontSize: 14 },
+                      ]}
+                      value={editName}
+                      onChangeText={setEditName}
+                      placeholder="Name"
+                    />
+                    <TextInput
+                      style={[
+                        styles.input,
+                        { marginBottom: 0, width: 60, fontSize: 14 },
+                      ]}
+                      value={editNumber}
+                      onChangeText={setEditNumber}
+                      placeholder="Number"
+                      keyboardType="numeric"
+                    />
+                    <Button title="Save" onPress={saveEdit} />
+                    <Button title="Cancel" onPress={cancelEdit} color="#888" />
+                  </>
+                ) : (
+                  <>
+                    <Text>{racer.name}</Text>
+                    <Text>#{racer.number}</Text>
+                    <Button title="Edit" onPress={() => startEdit(racer)} />
+                  </>
+                )}
               </View>
             ))}
           </ScrollView>

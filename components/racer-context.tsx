@@ -13,6 +13,7 @@ interface RacerContextType {
   addRacer: (racer: Racer) => void;
   removeRacer: (id: string) => void;
   clearRacers: () => void;
+  editRacer: (id: string, updates: { name?: string; number?: string }) => void;
 }
 
 const RacerContext = createContext<RacerContextType | undefined>(undefined);
@@ -60,9 +61,18 @@ export const RacerProvider = ({ children }: { children: ReactNode }) => {
     setRacers([]);
   };
 
+  const editRacer = (
+    id: string,
+    updates: { name?: string; number?: string },
+  ) => {
+    setRacers((prev) =>
+      prev.map((racer) => (racer.id === id ? { ...racer, ...updates } : racer)),
+    );
+  };
+
   return (
     <RacerContext.Provider
-      value={{ racers, addRacer, removeRacer, clearRacers }}
+      value={{ racers, addRacer, removeRacer, clearRacers, editRacer }}
     >
       {children}
     </RacerContext.Provider>

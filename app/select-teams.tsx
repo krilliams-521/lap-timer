@@ -132,6 +132,11 @@ function SelectTeamsScreen() {
           onPress={handleContinue}
           disabled={teams.length * 2 !== racers.length}
         />
+        <Button
+          title="Back to Add Racers"
+          onPress={() => router.replace('/add-racer')}
+          color="#888"
+        />
       </View>
     </SafeAreaView>
   );
