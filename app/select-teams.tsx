@@ -79,6 +79,24 @@ function SelectTeamsScreen() {
     router.push({ pathname: '/start-team-race' });
   };
 
+  const handleClearTeams = () => {
+    Alert.alert(
+      'Clear All Teams',
+      'Are you sure you want to remove all teams?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => {
+            setTeams([]);
+            setSelected([]);
+          },
+        },
+      ],
+    );
+  };
+
   const unassigned = racers.filter(
     (r) => !teams.flatMap((t) => t.members).includes(r.id),
   );
@@ -112,6 +130,11 @@ function SelectTeamsScreen() {
           title="Add Team"
           onPress={handleAddTeam}
           disabled={selected.length !== 2}
+        />
+        <Button
+          title="Clear All Teams"
+          onPress={handleClearTeams}
+          color="red"
         />
         <Text style={styles.subtitle}>Teams</Text>
         {teams.map((team, idx) => (
