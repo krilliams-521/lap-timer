@@ -114,13 +114,35 @@ export default function AddRacerScreen() {
     });
   };
 
-  // Add 20 riders automatically
+  const testNames = [
+    'Alice',
+    'Bob',
+    'Charlie',
+    'Dana',
+    'Eve',
+    'Frank',
+    'Grace',
+    'Hank',
+    'Ivy',
+    'Jack',
+    'Kara',
+    'Leo',
+    'Mona',
+    'Nina',
+    'Oscar',
+    'Paul',
+    'Quinn',
+    'Rita',
+    'Sam',
+    'Tina',
+  ];
+
   const handleAddTwentyRiders = () => {
-    for (let i = 1; i <= 32; i++) {
+    for (let i = 0; i < 20; i++) {
       const newRacer: Racer = {
         id: Math.random().toString(36).substr(2, 9),
-        name: `Rider ${i}`,
-        number: `${i}`,
+        name: testNames[i],
+        number: `${i + 1}`,
       };
       addRacer(newRacer);
     }
