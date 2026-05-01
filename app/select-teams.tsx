@@ -201,19 +201,61 @@ function SelectTeamsScreen() {
         />
 
         <Text style={styles.subtitle}>Teams</Text>
-        {teams.map((team, idx) => (
-          <View key={team.id} style={[styles.team, { width: '90%' }]}>
-            <Text style={styles.teamLabel}>Team {idx + 1}:</Text>
-            <Text>
-              {team.members
-                .map((id) => {
-                  const racer = racers.find((r) => r.id === id);
-                  return racer ? `${racer.name} (#${racer.number})` : '';
-                })
-                .join(' & ')}
-            </Text>
-          </View>
-        ))}
+        <View
+          style={{
+            maxHeight: 180,
+            width: '100%',
+            marginBottom: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <FlatList
+            data={teams}
+            keyExtractor={(team) => team.id}
+            renderItem={({ item: team, index: idx }) => (
+              <View
+                key={team.id}
+                style={[styles.team, { width: '90%', alignItems: 'center' }]}
+              >
+                <Text style={styles.teamLabel}>Team {idx + 1}:</Text>
+                <Text style={{ flex: 1, marginLeft: 8 }}>
+                  {team.members
+                    .map((id) => {
+                      const racer = racers.find((r) => r.id === id);
+                      return racer ? `${racer.name} (#${racer.number})` : '';
+                    })
+                    .join(' & ')}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    Alert.alert(
+                      `Remove Team ${idx + 1}?`,
+                      'Are you sure you want to remove this team and return both racers to the pool?',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        {
+                          text: 'Remove',
+                          style: 'destructive',
+                          onPress: () =>
+                            setTeams((prev) =>
+                              prev.filter((t) => t.id !== team.id),
+                            ),
+                        },
+                      ],
+                    );
+                  }}
+                  accessibilityLabel={`Remove Team ${idx + 1}`}
+                  style={{ marginLeft: 12, padding: 4 }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={{ fontSize: 20, color: '#d32f2f' }}>×</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            showsVerticalScrollIndicator={true}
+          />
+        </View>
         <Button
           title="Continue"
           onPress={handleContinue}
@@ -229,51 +271,53 @@ function SelectTeamsScreen() {
           onPress={handleClearTeams}
           color="red"
         />
-      </View>
 
-      {/* Selected Racers Area (fixed at bottom) */}
-      {selected.length > 0 && (
-        <View style={styles.selectedArea} accessibilityLabel="Selected Racers">
+        {selected.length > 0 && (
           <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              maxWidth: 110,
-              width: '92%',
-              marginHorizontal: '4%',
-              justifyContent: 'center',
-              flex: 1,
-              marginBottom: 20,
-            }}
+            style={styles.selectedArea}
+            accessibilityLabel="Selected Racers"
           >
-            {selected.map((id) => {
-              const racer = racers.find((r) => r.id === id);
-              if (!racer) return null;
-              return (
-                <View key={id} style={styles.selectedChip}>
-                  <Text style={styles.chipText}>
-                    {racer.name} (#{racer.number})
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveSelected(id)}
-                    accessibilityLabel={`Remove ${racer.name}`}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Text style={styles.chipRemove}>×</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-            <Button
-              title="Add Team"
-              onPress={handleAddTeam}
-              disabled={selected.length !== 2}
-              color={selected.length === 2 ? '#00bcd4' : '#aaa'}
-              accessibilityLabel="Add selected racers as a team"
-            />
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                maxWidth: 360,
+                width: '92%',
+                marginHorizontal: '4%',
+                justifyContent: 'center',
+                flex: 1,
+                marginBottom: 20,
+              }}
+            >
+              {selected.map((id) => {
+                const racer = racers.find((r) => r.id === id);
+                if (!racer) return null;
+                return (
+                  <View key={id} style={styles.selectedChip}>
+                    <Text style={styles.chipText}>
+                      {racer.name} (#{racer.number})
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveSelected(id)}
+                      accessibilityLabel={`Remove ${racer.name}`}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.chipRemove}>×</Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+              <Button
+                title="Add Team"
+                onPress={handleAddTeam}
+                disabled={selected.length !== 2}
+                color={selected.length === 2 ? '#00bcd4' : '#aaa'}
+                accessibilityLabel="Add selected racers as a team"
+              />
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </View>
     </SafeAreaView>
   );
 }
