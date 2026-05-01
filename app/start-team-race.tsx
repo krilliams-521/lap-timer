@@ -42,6 +42,7 @@ export default function StartTeamRace() {
     isRaceFinished,
     setIsRaceFinished,
     setRaceStartTime,
+    resetTeamRace,
   } = useTeamRace() as any;
   const [raceStarted, setRaceStarted] = useState(false);
   const [clock, setClock] = useState(0);
@@ -136,7 +137,12 @@ export default function StartTeamRace() {
       <View style={{ marginTop: 24 }}>
         <Button
           title="Back to Add Racers"
-          onPress={() => router.replace('/add-racer')}
+          onPress={() => {
+            if (typeof setIsRaceFinished === 'function')
+              setIsRaceFinished(false);
+            if (typeof resetTeamRace === 'function') resetTeamRace();
+            router.replace('/add-racer');
+          }}
         />
       </View>
     </View>

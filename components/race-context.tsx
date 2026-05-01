@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { Race, Racer } from './types';
 
@@ -30,8 +31,34 @@ export const RaceProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const endRace = () => {
-    setRace((prev) => (prev ? { ...prev, endTime: new Date() } : prev));
+  const endRace = async () => {
+    setRace((prev) => {
+      if (!prev) return prev;
+      const finishedRace = { ...prev, endTime: new Date() };
+      // Save to AsyncStorage
+      saveRaceResult(finishedRace);
+      // Clear context after saving
+      setTimeout(() => setRace(null), 100);
+      return finishedRace;
+    });
+  };
+
+  // Save finished race to AsyncStorage
+  const saveRaceResult = async (race: Race) => {
+    try {
+      const STORAGE_KEY = 'previous_race_results';
+      const existing = await AsyncStorage.getItem(STORAGE_KEY);
+      let results = [];
+      if (existing) {
+        results = JSON.parse(existing);
+      }
+      // Add date for display
+      const raceWithDate = { ...race, date: new Date().toLocaleString() };
+      results.push(raceWithDate);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+    } catch (e) {
+      // Optionally handle error
+    }
   };
 
   const logLap = (racerId: string, lapTime: number) => {

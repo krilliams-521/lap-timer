@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRacers } from './racer-context';
 
 interface Team {
@@ -47,6 +48,38 @@ export const TeamRaceContextProvider: React.FC<{
 
   // Track race start time for lap duration calculation
   const [raceStartTime, setRaceStartTime] = useState<number | null>(null);
+
+  // Save finished team race to AsyncStorage when finished
+  useEffect(() => {
+    if (isRaceFinished && teams.length > 0) {
+      saveTeamRaceResult();
+      // Do NOT clear context here; let UI show results until user leaves
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRaceFinished]);
+
+  const saveTeamRaceResult = async () => {
+    try {
+      const STORAGE_KEY = 'previous_race_results';
+      const existing = await AsyncStorage.getItem(STORAGE_KEY);
+      let results = [];
+      if (existing) {
+        results = JSON.parse(existing);
+      }
+      // Save relevant team race data
+      const raceData = {
+        teams,
+        teamLapData,
+        racers, // include full racer objects for display
+        date: new Date().toLocaleString(),
+        type: 'team',
+      };
+      results.push(raceData);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+    } catch (e) {
+      // Optionally handle error
+    }
+  };
 
   const logLap = (teamIdx: number, racerIdx: number, timestamp: number) => {
     const team = teams[teamIdx];

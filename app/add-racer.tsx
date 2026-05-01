@@ -2,13 +2,13 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-  Alert,
-  Button,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Alert,
+    Button,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import { useRacers } from '../components/racer-context';
 import { Racer } from '../components/types';
@@ -181,6 +181,15 @@ export default function AddRacerScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.title}>Add Racer</Text>
+
+      {/* Previous Results Button */}
+      <Button
+        title="Previous Results"
+        onPress={() => router.push('/previous-results')}
+        color="#007AFF"
+      />
+      <View style={{ height: 16 }} />
+
       <Button
         title="Add 4 Test Racers"
         onPress={handleAddFourRacers}
