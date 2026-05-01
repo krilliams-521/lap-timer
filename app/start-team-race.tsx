@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import LapBanner from '../components/LapBanner';
 import LapLogger from '../components/LapLogger';
 import { useTeamRace } from '../components/team-race-context';
 import TeamLeaderboard from '../components/TeamLeaderboard';
@@ -26,6 +27,13 @@ const styles = StyleSheet.create({
   },
 });
 export default function StartTeamRace() {
+  // Banner state is lifted here
+  const [banner, setBanner] = useState<{ message: string; visible: boolean }>({
+    message: '',
+    visible: false,
+  });
+  const showBanner = (message: string) => setBanner({ message, visible: true });
+  const hideBanner = () => setBanner({ message: '', visible: false });
   const router = useRouter();
   const {
     teams,
@@ -108,6 +116,7 @@ export default function StartTeamRace() {
       {raceStarted && !isRaceFinished ? (
         <>
           <Text style={styles.clock}>Race Time: {formatClock(clock)}</Text>
+          <LapBanner message={banner.message} visible={banner.visible} />
           <LapLogger
             mode="team"
             racers={racers}
@@ -115,6 +124,8 @@ export default function StartTeamRace() {
             raceStarted={raceStarted && !isRaceFinished}
             logByNumber={logByNumber}
             setLogByNumber={setLogByNumber}
+            showBanner={showBanner}
+            hideBanner={hideBanner}
           />
           <View style={{ marginTop: 24 }}>
             <Button title="End Race" onPress={handleEndRace} color="red" />
