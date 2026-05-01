@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Button,
@@ -92,6 +93,29 @@ function SelectTeamsScreen() {
   const { racers } = useRacers();
   const [selected, setSelected] = useState<string[]>([]);
   const [teams, setTeams] = useState<{ id: string; members: string[] }[]>([]);
+
+  // Key for AsyncStorage
+  const TEAMS_STORAGE_KEY = 'teams';
+
+  // Load teams from AsyncStorage on mount
+  useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(TEAMS_STORAGE_KEY);
+        if (stored) {
+          setTeams(JSON.parse(stored));
+        }
+      } catch (e) {
+        // Optionally handle error
+      }
+    };
+    loadTeams();
+  }, []);
+
+  // Save teams to AsyncStorage whenever they change
+  useEffect(() => {
+    AsyncStorage.setItem(TEAMS_STORAGE_KEY, JSON.stringify(teams));
+  }, [teams]);
   const router = useRouter();
   const { setTeams: setTeamsContext } = useTeamRace();
 
@@ -145,9 +169,10 @@ function SelectTeamsScreen() {
         {
           text: 'Clear',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             setTeams([]);
             setSelected([]);
+            await AsyncStorage.removeItem(TEAMS_STORAGE_KEY);
           },
         },
       ],
