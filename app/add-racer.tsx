@@ -116,7 +116,7 @@ export default function AddRacerScreen() {
 
   // Add 20 riders automatically
   const handleAddTwentyRiders = () => {
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 32; i++) {
       const newRacer: Racer = {
         id: Math.random().toString(36).substr(2, 9),
         name: `Rider ${i}`,

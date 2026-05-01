@@ -25,13 +25,61 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   subtitle: { fontSize: 18, marginVertical: 12 },
   racer: {
-    padding: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     marginBottom: 8,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 48,
   },
-  selected: { backgroundColor: '#e0f7fa' },
+  selected: {
+    borderColor: '#00bcd4',
+    shadowColor: '#00bcd4',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    backgroundColor: '#e0f7fa',
+  },
+  selectedArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fafbfc',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    minHeight: 64,
+    zIndex: 10,
+  },
+  selectedChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e0f7fa',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginHorizontal: 4,
+    marginVertical: 2,
+    minWidth: 44,
+    minHeight: 36,
+    elevation: 2,
+  },
+  chipText: { fontSize: 16, marginRight: 8 },
+  chipRemove: {
+    fontSize: 18,
+    color: '#d32f2f',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    minWidth: 28,
+    textAlign: 'center',
+  },
   team: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -47,14 +95,23 @@ function SelectTeamsScreen() {
   const router = useRouter();
   const { setTeams: setTeamsContext } = useTeamRace();
 
+  // Toggle selection, max 2
   const handleSelect = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id)
-        ? prev.filter((r) => r !== id)
-        : prev.length < 2
-          ? [...prev, id]
-          : prev,
-    );
+    setSelected((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((r) => r !== id);
+      }
+      if (prev.length >= 2) {
+        // Ignore further selections
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  // Remove a single racer from selection
+  const handleRemoveSelected = (id: string) => {
+    setSelected((prev) => prev.filter((r) => r !== id));
   };
 
   const handleAddTeam = () => {
@@ -103,7 +160,14 @@ function SelectTeamsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ width: '100%', alignItems: 'center', flex: 1 }}>
+      <View
+        style={{
+          width: '100%',
+          alignItems: 'center',
+          flex: 1,
+          paddingBottom: 90,
+        }}
+      >
         <Text style={styles.title}>Select Teams</Text>
         <Text style={styles.subtitle}>Unassigned Racers</Text>
         <FlatList
@@ -119,23 +183,23 @@ function SelectTeamsScreen() {
                 { width: '90%' },
               ]}
               onPress={() => handleSelect(item.id)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selected.includes(item.id) }}
+              disabled={selected.length === 2 && !selected.includes(item.id)}
+              activeOpacity={0.7}
             >
-              <Text>
+              <Text style={{ fontSize: 16 }}>
                 {item.name} (#{item.number})
               </Text>
+              {selected.includes(item.id) && (
+                <Text style={{ fontSize: 20, color: '#00bcd4', marginLeft: 8 }}>
+                  ✓
+                </Text>
+              )}
             </TouchableOpacity>
           )}
         />
-        <Button
-          title="Add Team"
-          onPress={handleAddTeam}
-          disabled={selected.length !== 2}
-        />
-        <Button
-          title="Clear All Teams"
-          onPress={handleClearTeams}
-          color="red"
-        />
+
         <Text style={styles.subtitle}>Teams</Text>
         {teams.map((team, idx) => (
           <View key={team.id} style={[styles.team, { width: '90%' }]}>
@@ -160,7 +224,56 @@ function SelectTeamsScreen() {
           onPress={() => router.replace('/add-racer')}
           color="#888"
         />
+        <Button
+          title="Clear All Teams"
+          onPress={handleClearTeams}
+          color="red"
+        />
       </View>
+
+      {/* Selected Racers Area (fixed at bottom) */}
+      {selected.length > 0 && (
+        <View style={styles.selectedArea} accessibilityLabel="Selected Racers">
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              maxWidth: 110,
+              width: '92%',
+              marginHorizontal: '4%',
+              justifyContent: 'center',
+              flex: 1,
+              marginBottom: 20,
+            }}
+          >
+            {selected.map((id) => {
+              const racer = racers.find((r) => r.id === id);
+              if (!racer) return null;
+              return (
+                <View key={id} style={styles.selectedChip}>
+                  <Text style={styles.chipText}>
+                    {racer.name} (#{racer.number})
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveSelected(id)}
+                    accessibilityLabel={`Remove ${racer.name}`}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text style={styles.chipRemove}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+            <Button
+              title="Add Team"
+              onPress={handleAddTeam}
+              disabled={selected.length !== 2}
+              color={selected.length === 2 ? '#00bcd4' : '#aaa'}
+              accessibilityLabel="Add selected racers as a team"
+            />
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
