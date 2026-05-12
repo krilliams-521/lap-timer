@@ -10,11 +10,15 @@ function LayoutWithRedirect() {
   const router = useRouter();
   const segments = useSegments();
   useEffect(() => {
-    // Only redirect if router is ready and not already on add-racer
     if (!router || !router.replace) return;
-    const isOnAddRacer = segments[0] === 'add-racer';
-    // Avoid redirecting before router is mounted
-    if (racers.length === 0 && !isOnAddRacer) {
+    const currentRoute = segments[0];
+    const allowNoRacersRoutes = [
+      'add-racer',
+      'previous-results',
+      'previous-results-detail',
+    ];
+    const isAllowed = allowNoRacersRoutes.includes(currentRoute);
+    if (racers.length === 0 && !isAllowed) {
       setTimeout(() => {
         router.replace('/add-racer');
       }, 0);
