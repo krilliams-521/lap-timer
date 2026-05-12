@@ -1,14 +1,13 @@
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-    Alert,
-    Button,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { useRacers } from '../components/racer-context';
 import { Racer } from '../components/types';
@@ -63,7 +62,7 @@ export default function AddRacerScreen() {
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const { addRacer, racers, clearRacers, editRacer } = useRacers();
-  const [raceType, setRaceType] = useState('Individual');
+  const [raceType, setRaceType] = useState('Team');
   const router = useRouter();
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -270,14 +269,14 @@ export default function AddRacerScreen() {
           />
           <View style={{ height: 12 }} />
           <Text style={{ marginTop: 12, marginBottom: 4 }}>Race Type:</Text>
-          <Picker
+          {/* <Picker
             selectedValue={raceType}
             onValueChange={(itemValue) => setRaceType(itemValue)}
             style={{ width: '100%', marginBottom: 12 }}
           >
             <Picker.Item label="Individual" value="Individual" />
             <Picker.Item label="Team" value="Team" />
-          </Picker>
+          </Picker> */}
           <Button
             title="Continue"
             onPress={() => {
