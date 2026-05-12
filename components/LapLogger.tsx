@@ -180,7 +180,7 @@ export default function LapLogger(props: LapLoggerWithBannerProps) {
                   onLogLap && onLogLap(racer.id, lapTime);
                 }
                 hideBanner();
-                showBanner(`Lap logged for ${racer.name}!`);
+                showBanner(`Lap logged for ${racer.name} - #${racer.number}!`);
               } else {
                 // Set as pending, require second tap
                 setPendingRacerId(racer.id);
@@ -221,7 +221,9 @@ export default function LapLogger(props: LapLoggerWithBannerProps) {
                       onLogLap && onLogLap(racer.id, lapTime);
                     }
                     hideBanner(); // Hide previous banner before showing new one
-                    showBanner(`Lap logged for ${racer.name}!`);
+                    showBanner(
+                      `Lap logged for ${racer.name} - #${racer.number}!`,
+                    );
                   } else {
                     // Set as pending, require second tap
                     setPendingRacerId(racer.id);
