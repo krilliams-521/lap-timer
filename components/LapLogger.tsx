@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-    Button,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import type { Racer } from './types';
@@ -150,7 +150,15 @@ export default function LapLogger(props: LapLoggerWithBannerProps) {
             <Text style={{ color: 'red' }}>{numberError}</Text>
           ) : null}
           <Button
-            title="Log Lap"
+            title={(() => {
+              const racer = racers.find(
+                (r: Racer) => r.number === numberInput.trim(),
+              );
+              if (!racer) return 'Log Lap';
+              return pendingRacerId === racer.id
+                ? 'Tap again to confirm'
+                : 'Log Lap';
+            })()}
             onPress={() => {
               const racer = racers.find(
                 (r: Racer) => r.number === numberInput.trim(),
@@ -159,13 +167,29 @@ export default function LapLogger(props: LapLoggerWithBannerProps) {
                 setNumberError('Racer not found');
                 return;
               }
-              setNumberError('');
-              setNumberInput('');
-              const lapTime = getLapTime(racer.id);
-              if (isTeam) {
-                onTeamLogLap && onTeamLogLap(racer.id, lapTime);
+              if (pendingRacerId === racer.id) {
+                // Confirmed
+                if (confirmTimeout) clearTimeout(confirmTimeout);
+                setPendingRacerId(null);
+                setNumberError('');
+                setNumberInput('');
+                const lapTime = getLapTime(racer.id);
+                if (isTeam) {
+                  onTeamLogLap && onTeamLogLap(racer.id, lapTime);
+                } else {
+                  onLogLap && onLogLap(racer.id, lapTime);
+                }
+                hideBanner();
+                showBanner(`Lap logged for ${racer.name}!`);
               } else {
-                onLogLap && onLogLap(racer.id, lapTime);
+                // Set as pending, require second tap
+                setPendingRacerId(racer.id);
+                if (confirmTimeout) clearTimeout(confirmTimeout);
+                // Do NOT hideBanner here; keep banner until next log
+                const timeout = setTimeout(() => {
+                  setPendingRacerId(null);
+                }, 2500);
+                setConfirmTimeout(timeout as unknown as NodeJS.Timeout);
               }
             }}
             disabled={!numberInput.trim()}
