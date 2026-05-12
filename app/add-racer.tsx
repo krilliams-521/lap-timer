@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useRacers } from '../components/racer-context';
+import { useTeamRace } from '../components/team-race-context';
 import { Racer } from '../components/types';
 
 const styles = StyleSheet.create({
@@ -62,6 +64,7 @@ export default function AddRacerScreen() {
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const { addRacer, racers, clearRacers, editRacer } = useRacers();
+  const { resetTeamRace } = useTeamRace();
   const [raceType, setRaceType] = useState('Team');
   const router = useRouter();
   // Edit state
@@ -88,10 +91,18 @@ export default function AddRacerScreen() {
   const handleClearRacers = () => {
     Alert.alert(
       'Clear All Racers',
-      'Are you sure you want to remove all racers?',
+      'Are you sure you want to remove all racers? This will also clear all teams.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Clear', style: 'destructive', onPress: () => clearRacers() },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            clearRacers();
+            resetTeamRace();
+            await AsyncStorage.removeItem('teams');
+          },
+        },
       ],
     );
   };
@@ -268,8 +279,8 @@ export default function AddRacerScreen() {
             color="red"
           />
           <View style={{ height: 12 }} />
-          <Text style={{ marginTop: 12, marginBottom: 4 }}>Race Type:</Text>
-          {/* <Picker
+          {/* <Text style={{ marginTop: 12, marginBottom: 4 }}>Race Type:</Text>
+          <Picker
             selectedValue={raceType}
             onValueChange={(itemValue) => setRaceType(itemValue)}
             style={{ width: '100%', marginBottom: 12 }}
