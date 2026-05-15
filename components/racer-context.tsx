@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
 } from 'react';
 import { Racer } from './types';
 
@@ -14,6 +14,7 @@ interface RacerContextType {
   removeRacer: (id: string) => void;
   clearRacers: () => void;
   editRacer: (id: string, updates: { name?: string; number?: string }) => void;
+  deleteRacer: (id: string) => void;
 }
 
 const RacerContext = createContext<RacerContextType | undefined>(undefined);
@@ -72,7 +73,14 @@ export const RacerProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <RacerContext.Provider
-      value={{ racers, addRacer, removeRacer, clearRacers, editRacer }}
+      value={{
+        racers,
+        addRacer,
+        removeRacer,
+        clearRacers,
+        editRacer,
+        deleteRacer: removeRacer, // alias for UI
+      }}
     >
       {children}
     </RacerContext.Provider>

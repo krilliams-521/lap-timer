@@ -13,6 +13,7 @@ import {
 import { useRacers } from '../components/racer-context';
 import { useTeamRace } from '../components/team-race-context';
 import { Racer } from '../components/types';
+import defaultRacers from '../constants/racers';
 
 const styles = StyleSheet.create({
   container: {
@@ -59,11 +60,22 @@ const styles = StyleSheet.create({
 });
 
 export default function AddRacerScreen() {
+  // Add all default racers from constants/racers.ts
+  const handleAddDefaultRacers = () => {
+    defaultRacers.forEach(({ name, number }) => {
+      const newRacer: Racer = {
+        id: Math.random().toString(36).substr(2, 9),
+        name,
+        number,
+      };
+      addRacer(newRacer);
+    });
+  };
   const numberInputRef = useRef<TextInput>(null);
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const { addRacer, racers, clearRacers, editRacer } = useRacers();
+  const { addRacer, racers, clearRacers, editRacer, deleteRacer } = useRacers();
   const { resetTeamRace } = useTeamRace();
   const [raceType, setRaceType] = useState('Team');
   const router = useRouter();
@@ -71,6 +83,10 @@ export default function AddRacerScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editNumber, setEditNumber] = useState('');
+
+  const racersWithInvalidNumbers = racers.filter(
+    (r) => !r.number || r.number.trim().toLowerCase() === 'none',
+  );
 
   const handleAdd = () => {
     if (name.trim() && number.trim()) {
@@ -107,57 +123,6 @@ export default function AddRacerScreen() {
     );
   };
 
-  const handleAddFourRacers = () => {
-    const testRacers = [
-      { name: 'Alice', number: '1' },
-      { name: 'Bob', number: '2' },
-      { name: 'Charlie', number: '3' },
-      { name: 'Dana', number: '4' },
-    ];
-    testRacers.forEach(({ name, number }) => {
-      const newRacer: Racer = {
-        id: Math.random().toString(36).substr(2, 9),
-        name,
-        number,
-      };
-      addRacer(newRacer);
-    });
-  };
-
-  const testNames = [
-    'Alice',
-    'Bob',
-    'Charlie',
-    'Dana',
-    'Eve',
-    'Frank',
-    'Grace',
-    'Hank',
-    'Ivy',
-    'Jack',
-    'Kara',
-    'Leo',
-    'Mona',
-    'Nina',
-    'Oscar',
-    'Paul',
-    'Quinn',
-    'Rita',
-    'Sam',
-    'Tina',
-  ];
-
-  const handleAddTwentyRiders = () => {
-    for (let i = 0; i < 20; i++) {
-      const newRacer: Racer = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: testNames[i],
-        number: `${i + 1}`,
-      };
-      addRacer(newRacer);
-    }
-  };
-
   const startEdit = (racer: Racer) => {
     setEditingId(racer.id);
     setEditName(racer.name);
@@ -192,6 +157,38 @@ export default function AddRacerScreen() {
     >
       <Text style={styles.title}>Add Racer</Text>
 
+      {racersWithInvalidNumbers.length > 0 && (
+        <View
+          style={{
+            backgroundColor: '#ffe5e5',
+            borderColor: '#ff4d4f',
+            borderWidth: 1,
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 16,
+            width: '90%',
+          }}
+        >
+          <Text
+            style={{ color: '#b71c1c', fontWeight: 'bold', marginBottom: 4 }}
+          >
+            Warning: Some racers are missing numbers!
+          </Text>
+          <Text style={{ color: '#b71c1c', fontSize: 13 }}>
+            Please assign a number to the following racers before starting the
+            race:
+          </Text>
+          {racersWithInvalidNumbers.map((r) => (
+            <Text
+              key={r.id || r.name}
+              style={{ color: '#b71c1c', marginLeft: 8 }}
+            >
+              • {r.name}
+            </Text>
+          ))}
+        </View>
+      )}
+
       {/* Previous Results Button */}
       <Button
         title="Previous Results"
@@ -200,17 +197,12 @@ export default function AddRacerScreen() {
       />
       <View style={{ height: 16 }} />
 
-      {/* <Button
-        title="Add 4 Test Racers"
-        onPress={handleAddFourRacers}
+      <Button
+        title="Add Default Racers"
+        onPress={handleAddDefaultRacers}
         color="#888"
       />
       <View style={{ height: 8 }} />
-      <Button
-        title="Add 20 Riders Automatically"
-        onPress={handleAddTwentyRiders}
-        color="#888"
-      /> */}
       <View style={{ height: 12 }} />
       <TextInput
         style={styles.input}
@@ -234,7 +226,17 @@ export default function AddRacerScreen() {
           <Text style={styles.racerListTitle}>Racers:</Text>
           <ScrollView style={{ maxHeight: 300 }}>
             {racers.map((racer) => (
-              <View key={racer.id} style={styles.racerRow}>
+              <View
+                key={racer.id}
+                style={
+                  editingId === racer.id
+                    ? [
+                        styles.racerRow,
+                        { alignItems: 'flex-start', flexDirection: 'column' },
+                      ]
+                    : styles.racerRow
+                }
+              >
                 {editingId === racer.id ? (
                   <>
                     <TextInput
@@ -256,8 +258,24 @@ export default function AddRacerScreen() {
                       placeholder="Number"
                       keyboardType="numeric"
                     />
-                    <Button title="Save" onPress={saveEdit} />
-                    <Button title="Cancel" onPress={cancelEdit} color="#888" />
+                    <View style={{ alignSelf: 'stretch', marginTop: 4 }}>
+                      <Button title="Save" onPress={saveEdit} />
+                      <View style={{ height: 4 }} />
+                      <Button
+                        title="Cancel"
+                        onPress={cancelEdit}
+                        color="#888"
+                      />
+                      <View style={{ height: 4 }} />
+                      <Button
+                        title="Delete"
+                        onPress={() => {
+                          deleteRacer(racer.id);
+                          cancelEdit();
+                        }}
+                        color="#d32f2f"
+                      />
+                    </View>
                   </>
                 ) : (
                   <>
