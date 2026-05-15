@@ -200,7 +200,7 @@ export default function AddRacerScreen() {
       />
       <View style={{ height: 16 }} />
 
-      <Button
+      {/* <Button
         title="Add 4 Test Racers"
         onPress={handleAddFourRacers}
         color="#888"
@@ -210,7 +210,7 @@ export default function AddRacerScreen() {
         title="Add 20 Riders Automatically"
         onPress={handleAddTwentyRiders}
         color="#888"
-      />
+      /> */}
       <View style={{ height: 12 }} />
       <TextInput
         style={styles.input}
