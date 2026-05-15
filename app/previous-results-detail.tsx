@@ -27,7 +27,8 @@ export default function PreviousResultsDetailScreen() {
         const data = await AsyncStorage.getItem(STORAGE_KEY);
         if (data) {
           const results = JSON.parse(data);
-          setResult(results[Number(index)]);
+          const res = results[Number(index)];
+          setResult(res);
         }
       } catch (e) {
         setResult(null);
@@ -156,22 +157,37 @@ export default function PreviousResultsDetailScreen() {
     });
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Final Results</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            marginBottom: 8,
-          }}
-        >
-          <Button title="Preview CSV" onPress={handlePreviewCSV} />
-          <View style={{ width: 8 }} />
-          <Button title="Copy CSV to Clipboard" onPress={handleCopyCSV} />
-        </View>
         <ScrollView
-          style={{ maxHeight: 400, width: '100%' }}
-          contentContainerStyle={{ alignItems: 'center', paddingBottom: 8 }}
+          contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}
         >
+          <Text style={styles.title}>Final Results</Text>
+          {result.startTime && (
+            <Text style={styles.label}>
+              Start Time:{' '}
+              <Text style={styles.value}>
+                {new Date(result.startTime).toLocaleString()}
+              </Text>
+            </Text>
+          )}
+          {result.endTime && (
+            <Text style={styles.label}>
+              End Time:{' '}
+              <Text style={styles.value}>
+                {new Date(result.endTime).toLocaleString()}
+              </Text>
+            </Text>
+          )}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              marginBottom: 8,
+            }}
+          >
+            <Button title="Preview CSV" onPress={handlePreviewCSV} />
+            <View style={{ width: 8 }} />
+            <Button title="Copy CSV to Clipboard" onPress={handleCopyCSV} />
+          </View>
           {sorted.map((racer: any, idx: number) => (
             <View key={racer.id} style={styles.finalRow}>
               <Text style={styles.position}>{idx + 1}.</Text>
@@ -188,13 +204,13 @@ export default function PreviousResultsDetailScreen() {
               </View>
             </View>
           ))}
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.closeButtonText}>Back</Text>
+          </TouchableOpacity>
         </ScrollView>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.closeButtonText}>Back</Text>
-        </TouchableOpacity>
       </SafeAreaView>
     );
   }
@@ -217,22 +233,37 @@ export default function PreviousResultsDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Final Team Results</Text>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          marginBottom: 8,
-        }}
-      >
-        <Button title="Preview CSV" onPress={handlePreviewCSV} />
-        <View style={{ width: 8 }} />
-        <Button title="Copy CSV to Clipboard" onPress={handleCopyCSV} />
-      </View>
       <ScrollView
-        style={{ width: '100%' }}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}
       >
+        <Text style={styles.title}>Final Team Results</Text>
+        {result.startTime && (
+          <Text style={styles.label}>
+            Start Time:{' '}
+            <Text style={styles.value}>
+              {new Date(result.startTime).toLocaleString()}
+            </Text>
+          </Text>
+        )}
+        {result.endTime && (
+          <Text style={styles.label}>
+            End Time:{' '}
+            <Text style={styles.value}>
+              {new Date(result.endTime).toLocaleString()}
+            </Text>
+          </Text>
+        )}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginBottom: 8,
+          }}
+        >
+          <Button title="Preview CSV" onPress={handlePreviewCSV} />
+          <View style={{ width: 8 }} />
+          <Button title="Copy CSV to Clipboard" onPress={handleCopyCSV} />
+        </View>
         {sortedTeams.map((team: any, idx: number) => {
           const data = result.teamLapData[team.id] || {
             laps: 0,
@@ -288,13 +319,13 @@ export default function PreviousResultsDetailScreen() {
             </View>
           );
         })}
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.closeButtonText}>Back</Text>
+        </TouchableOpacity>
       </ScrollView>
-      <TouchableOpacity
-        style={styles.closeButton}
-        onPress={() => router.back()}
-      >
-        <Text style={styles.closeButtonText}>Back</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }

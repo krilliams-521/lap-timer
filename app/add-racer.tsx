@@ -60,6 +60,23 @@ const styles = StyleSheet.create({
 });
 
 export default function AddRacerScreen() {
+  // Handler to add 4 test racers
+  const handleAddFourRacers = () => {
+    const testRacers = [
+      { name: 'Alice', number: '1' },
+      { name: 'Bob', number: '2' },
+      { name: 'Charlie', number: '3' },
+      { name: 'Dana', number: '4' },
+    ];
+    testRacers.forEach(({ name, number }) => {
+      const newRacer: Racer = {
+        id: Math.random().toString(36).substr(2, 9),
+        name,
+        number,
+      };
+      addRacer(newRacer);
+    });
+  };
   // Add all default racers from constants/racers.ts
   const handleAddDefaultRacers = () => {
     defaultRacers.forEach(({ name, number }) => {
@@ -197,6 +214,12 @@ export default function AddRacerScreen() {
       />
       <View style={{ height: 16 }} />
 
+      <Button
+        title="Add 4 Test Racers"
+        onPress={handleAddFourRacers}
+        color="#888"
+      />
+      <View style={{ height: 8 }} />
       <Button
         title="Add Default Racers"
         onPress={handleAddDefaultRacers}

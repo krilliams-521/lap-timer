@@ -66,13 +66,16 @@ export const TeamRaceContextProvider: React.FC<{
       if (existing) {
         results = JSON.parse(existing);
       }
-      // Save relevant team race data
+      // Save relevant team race data, now with startTime and endTime
+      const now = Date.now();
       const raceData = {
         teams,
         teamLapData,
         racers, // include full racer objects for display
         date: new Date().toLocaleString(),
         type: 'team',
+        startTime: raceStartTime ? new Date(raceStartTime).toISOString() : null,
+        endTime: new Date(now).toISOString(),
       };
       results.push(raceData);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(results));

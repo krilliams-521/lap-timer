@@ -52,9 +52,20 @@ export const RaceProvider = ({ children }: { children: ReactNode }) => {
       if (existing) {
         results = JSON.parse(existing);
       }
-      // Add date for display
-      const raceWithDate = { ...race, date: new Date().toLocaleString() };
-      results.push(raceWithDate);
+      // Save start and end times as ISO strings for consistency
+      const raceWithTimes = {
+        ...race,
+        startTime:
+          race.startTime instanceof Date
+            ? race.startTime.toISOString()
+            : race.startTime,
+        endTime:
+          race.endTime instanceof Date && race.endTime !== null
+            ? race.endTime.toISOString()
+            : race.endTime,
+        date: new Date().toLocaleString(),
+      };
+      results.push(raceWithTimes);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(results));
     } catch (e) {
       // Optionally handle error
